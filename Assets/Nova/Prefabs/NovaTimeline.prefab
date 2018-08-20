@@ -64,6 +64,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: adbd80a12ee148d79044b339eb7a39da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _luaVariableName: nova_timeline
 --- !u!320 &320122174825198814
 PlayableDirector:
   m_ObjectHideFlags: 1

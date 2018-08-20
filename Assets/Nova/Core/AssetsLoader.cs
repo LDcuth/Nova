@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Timeline;
 
 namespace Nova
 {
@@ -43,6 +44,17 @@ namespace Nova
             if (ret == null)
             {
                 Debug.LogError(string.Format("AudioClip {0} not found", path));
+            }
+
+            return ret;
+        }
+
+        public static TimelineAsset GetTimelineAsset(string path)
+        {
+            var ret = Resources.Load<TimelineAsset>(path);
+            if (ret == null)
+            {
+                Debug.LogError(string.Format("TimelineAsset {0} not found", path));
             }
 
             return ret;

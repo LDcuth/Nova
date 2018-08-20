@@ -11,7 +11,6 @@ public static class LuaBinder
 		L.BeginModule(null);
 		LuaInterface_DebuggerWrap.Register(L);
 		LuaProfilerWrap.Register(L);
-		iTweenWrap.Register(L);
 		L.BeginModule("UnityEngine");
 		UnityEngine_ComponentWrap.Register(L);
 		UnityEngine_TransformWrap.Register(L);
@@ -73,6 +72,7 @@ public static class LuaBinder
 		Nova_BackgroundControllerWrap.Register(L);
 		Nova_AudioControllerWrap.Register(L);
 		Nova_CharacterControllerWrap.Register(L);
+		Nova_NovaTimelineWrap.Register(L);
 		L.BeginModule("Examples");
 		L.BeginModule("Colorless");
 		L.BeginModule("Scripts");

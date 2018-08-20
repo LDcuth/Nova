@@ -5,7 +5,6 @@ using UnityEngine.Timeline;
 
 namespace Nova
 {
-    // TODO haven't exported to lua script yet
     [RequireComponent(typeof(NovaAnimation), typeof(PlayableDirector))]
     public class NovaTimeline : MonoBehaviour
     {
@@ -19,21 +18,27 @@ namespace Nova
             _playableDirector = GetComponent<PlayableDirector>();
             _playableDirector.timeUpdateMode = DirectorUpdateMode.Manual;
             _playableDirector.playOnAwake = false;
-            _property = new TimeAnimationProperty(_playableDirector);
+            _property = new TimeAnimationProperty(_playableDirector, _luaVariableName);
+            LuaRuntime.Instance.BindObject(_luaVariableName, this, "_G");
         }
+
+        [SerializeField] private string _luaVariableName;
+        [SerializeField] private string _timelineAssetFolder;
 
         private class TimeAnimationProperty : INovaAnimationProperty
         {
             private readonly PlayableDirector _playableDirector;
+            private readonly string _name;
 
-            public TimeAnimationProperty(PlayableDirector playableDirector)
+            public TimeAnimationProperty(PlayableDirector playableDirector, string name)
             {
                 _playableDirector = playableDirector;
+                _name = name;
             }
 
             public string ID
             {
-                get { return "nova_timeline"; }
+                get { return _name; }
             }
 
             public float value
@@ -46,7 +51,7 @@ namespace Nova
                 }
             }
         }
-        
+
         /// <summary>
         /// Start play a timeline asset, the play back time is controlled by NovaAnimation
         /// </summary>
@@ -79,6 +84,18 @@ namespace Nova
         {
             // It seems the Unity Editor does not work correctly with optional parameter :(
             Play(timelineAsset, 0f);
+        }
+
+        public void Play(string timelineAssetName, float startTime)
+        {
+            var path = System.IO.Path.Combine(_timelineAssetFolder, timelineAssetName);
+            var timeline = AssetsLoader.GetTimelineAsset(path);
+            Play(timeline, startTime);
+        }
+
+        public void Play(string timelineAssetName)
+        {
+            Play(timelineAssetName, 0f);
         }
 
         /// <summary>
