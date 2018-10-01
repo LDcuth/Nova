@@ -6,3 +6,4 @@
 require 'built_in'
 require 'background_controller'
 require 'audio'
+require 'dialogue_boxes_controller'

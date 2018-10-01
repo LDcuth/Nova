@@ -7,7 +7,7 @@ namespace Nova
 {
     public class DialogueButtonsController : MonoBehaviour
     {
-        public NarrowDialogueBoxController narrowDialogueBoxController;
+        public DialogueBoxController DialogueBoxController;
 
         private Button quickSaveButton;
         private Button quickLoadButton;
@@ -28,14 +28,14 @@ namespace Nova
             skipButton = transform.Find("Skip").GetComponent<Button>();
             logButton = transform.Find("Log").GetComponent<Button>();
 
-            autoButton.onClick.AddListener(() => { narrowDialogueBoxController.State = DialogueBoxState.Auto; });
-            skipButton.onClick.AddListener(() => { narrowDialogueBoxController.State = DialogueBoxState.Skip; });
+            autoButton.onClick.AddListener(() => { DialogueBoxController.State = DialogueBoxState.Auto; });
+            skipButton.onClick.AddListener(() => { DialogueBoxController.State = DialogueBoxState.Skip; });
 
-            quickSaveButton.onClick.AddListener(() => { narrowDialogueBoxController.State = DialogueBoxState.Normal; });
-            quickLoadButton.onClick.AddListener(() => { narrowDialogueBoxController.State = DialogueBoxState.Normal; });
-            saveButton.onClick.AddListener(() => { narrowDialogueBoxController.State = DialogueBoxState.Normal; });
-            loadButton.onClick.AddListener(() => { narrowDialogueBoxController.State = DialogueBoxState.Normal; });
-            logButton.onClick.AddListener(() => { narrowDialogueBoxController.State = DialogueBoxState.Normal; });
+            quickSaveButton.onClick.AddListener(() => { DialogueBoxController.State = DialogueBoxState.Normal; });
+            quickLoadButton.onClick.AddListener(() => { DialogueBoxController.State = DialogueBoxState.Normal; });
+            saveButton.onClick.AddListener(() => { DialogueBoxController.State = DialogueBoxState.Normal; });
+            loadButton.onClick.AddListener(() => { DialogueBoxController.State = DialogueBoxState.Normal; });
+            logButton.onClick.AddListener(() => { DialogueBoxController.State = DialogueBoxState.Normal; });
         }
     }
 }

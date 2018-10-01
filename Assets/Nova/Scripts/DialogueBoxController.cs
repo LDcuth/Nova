@@ -9,11 +9,16 @@ using UnityEngine.UI;
 
 namespace Nova
 {
-    public class NarrowDialogueBoxController : MonoBehaviour, IPointerClickHandler, IDialogueBoxController
+    public class DialogueBoxController : MonoBehaviour, IPointerClickHandler, IDialogueBoxController
     {
-        public bool needAnimation;
+        [Serializable]
+        private enum DialogueUpdateMode
+        {
+            Overwrite,
+            Append,
+        }
 
-        public float characterDisplayDuration;
+        [SerializeField] private DialogueUpdateMode dialogueUpdateMode;
 
         /// <summary>
         /// The regex expression to find the name
@@ -27,22 +32,34 @@ namespace Nova
 
         private GameState gameState;
 
-        private GameObject nameBox;
-        private Text nameTextArea;
-        private Text dialogueTextArea;
+        public GameObject nameBox;
+        public Text nameTextArea;
+        public TextAnimator dialogueTextArea;
 
         private void Awake()
         {
-            nameBox = transform.Find("NameBox").gameObject;
-            nameTextArea = nameBox.transform.Find("Text").GetComponent<Text>();
-            dialogueTextArea = transform.Find("DialogueBox/Text").GetComponent<Text>();
-
             gameState = Utils.FindNovaGameController().GetComponent<GameState>();
+        }
+
+        private void OnEnable()
+        {
+            Debug.Log("Enable");
             gameState.DialogueWillChange += OnDialogueWillChange;
             gameState.DialogueChanged += OnDialogueChanged;
             gameState.BranchOccurs += OnBranchOcurrs;
             gameState.BranchSelected += OnBranchSelected;
             gameState.CurrentRouteEnded += OnCurrentRouteEnded;
+        }
+
+        private void OnDisable()
+        {
+            Debug.Log("Disable");
+            StopAllCoroutines();
+            gameState.DialogueWillChange -= OnDialogueWillChange;
+            gameState.DialogueChanged -= OnDialogueChanged;
+            gameState.BranchOccurs -= OnBranchOcurrs;
+            gameState.BranchSelected -= OnBranchSelected;
+            gameState.CurrentRouteEnded -= OnCurrentRouteEnded;
         }
 
         private void OnCurrentRouteEnded(CurrentRouteEndedData arg0)
@@ -54,21 +71,6 @@ namespace Nova
         {
             StopTimer();
         }
-
-        private void OnDestroy()
-        {
-            StopAllCoroutines();
-            gameState.DialogueWillChange -= OnDialogueWillChange;
-            gameState.DialogueChanged -= OnDialogueChanged;
-            gameState.BranchOccurs -= OnBranchOcurrs;
-            gameState.BranchSelected -= OnBranchSelected;
-            gameState.CurrentRouteEnded -= OnCurrentRouteEnded;
-        }
-
-        private string currentName;
-        private string currentDialogue;
-
-        private Coroutine animationCoroutine;
 
         private DialogueBoxState _state = DialogueBoxState.Normal;
 
@@ -121,14 +123,16 @@ namespace Nova
             }
         }
 
+        [SerializeField] private string type;
+
         public string Type
         {
-            get { return "Narrow"; }
+            get { return type; }
         }
 
         public void NewPage()
         {
-            // do nothing
+            OverwriteDialogueDisplay("");
         }
 
         public UnityEvent AutoModeStarts;
@@ -136,7 +140,13 @@ namespace Nova
         public UnityEvent SkipModeStarts;
         public UnityEvent SkipModeStops;
 
-        private bool isAnimating;
+        private bool isAnimating
+        {
+            get { return dialogueTextArea.IsAnimating; }
+        }
+
+
+        private string currentDialogueText;
 
         /// <summary>
         /// The content of the dialogue box needs to be changed
@@ -145,14 +155,20 @@ namespace Nova
         private void OnDialogueChanged(DialogueChangedData dialogueData)
         {
             RestartTimer();
-            var text = dialogueData.text;
+            var text = currentDialogueText = dialogueData.text;
             Debug.Log(string.Format("<color=green><b>{0}</b></color>", text));
 
-            // Parse dialogue text
-            ParseDialogueText(text);
-
-            // Change display
-            ChangeDisplay();
+            switch (dialogueUpdateMode)
+            {
+                case DialogueUpdateMode.Overwrite:
+                    OverwriteDialogueDisplay(text);
+                    break;
+                case DialogueUpdateMode.Append:
+                    AppendDialogueText(text);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
 
             // Check current state and set schedule skip
             SetSchedule();
@@ -176,11 +192,16 @@ namespace Nova
             }
         }
 
-        /// <summary>
-        /// Change display based on current name and current dialogue
-        /// </summary>
-        private void ChangeDisplay()
+        private void OverwriteDialogueDisplay(string dialogueText)
         {
+            if (nameBox == null || nameTextArea == null)
+            {
+                dialogueTextArea.Set(dialogueText);
+                return;
+            }
+
+            string currentName, currentDialogue;
+            ParseDialogueText(dialogueText, out currentName, out currentDialogue);
             if (currentName == "")
             {
                 nameBox.SetActive(false);
@@ -191,26 +212,22 @@ namespace Nova
                 nameTextArea.text = currentName;
             }
 
-            if (!needAnimation)
-            {
-                dialogueTextArea.text = currentDialogue;
-                return;
-            }
-
-            // Need animantion
-            if (isAnimating)
-            {
-                StopCharacterAnimation();
-            }
-
-            StartCharacterAnimation();
+            dialogueTextArea.Set(currentDialogue);
         }
+
+        private void AppendDialogueText(string text)
+        {
+            dialogueTextArea.Append(text + "\n\n");
+        }
+
 
         /// <summary>
         /// Set current name and current dialogue based on dialogue text
         /// </summary>
         /// <param name="text">the dialogue text</param>
-        private void ParseDialogueText(string text)
+        /// <param name="currentName">character name of this dialogue</param>
+        /// <param name="currentDialogue">content of this dialogue</param>
+        private void ParseDialogueText(string text, out string currentName, out string currentDialogue)
         {
             var m = Regex.Match(text, namePattern);
             var dialogueStartIndex = 0;
@@ -264,52 +281,6 @@ namespace Nova
             }
         }
 
-        private void StartCharacterAnimation()
-        {
-            Assert.AreEqual(isAnimating, false,
-                "Start character animation should be called when previous animation is stoped");
-            isAnimating = true;
-            animationCoroutine = StartCoroutine(CharacterAnimation());
-        }
-
-        /// <summary>
-        /// Stop the current animation
-        /// </summary>
-        private void StopCharacterAnimation()
-        {
-            if (!isAnimating)
-            {
-                return;
-            }
-
-            if (animationCoroutine != null)
-            {
-                StopCoroutine(animationCoroutine);
-                animationCoroutine = null;
-            }
-
-            isAnimating = false;
-            dialogueTextArea.text = currentDialogue;
-        }
-
-        /// <summary>
-        /// Use coroutine to play animation, display the character one by one
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerator CharacterAnimation()
-        {
-            // empty text Area to handle the case when the dialogue is empty
-            dialogueTextArea.text = "";
-            for (var index = 1; index <= currentDialogue.Length; ++index)
-            {
-                dialogueTextArea.text = currentDialogue.Substring(0, index);
-                yield return new WaitForSeconds(characterDisplayDuration);
-            }
-
-            // Animation stop
-            isAnimating = false;
-        }
-
         private Coroutine scheduledStepCoroutine = null;
 
         public float AutoWaitTimePerCharacter;
@@ -332,7 +303,7 @@ namespace Nova
 
         private float GetAutoScheduledTime()
         {
-            return AutoWaitTimePerCharacter * currentDialogue.Length;
+            return AutoWaitTimePerCharacter * currentDialogueText.Length;
         }
 
         /// <summary>
@@ -365,6 +336,16 @@ namespace Nova
         public float SkipDelay;
         private bool shouldNeedAnimation;
 
+        private void StopCharacterAnimation()
+        {
+            dialogueTextArea.Flush();
+        }
+
+        private bool needAnimation
+        {
+            get { return dialogueTextArea.NeedAnimation; }
+            set { dialogueTextArea.NeedAnimation = value; }
+        }
 
         /// <summary>
         /// Begin skip

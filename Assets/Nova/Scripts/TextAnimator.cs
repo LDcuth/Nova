@@ -96,6 +96,10 @@ namespace Nova
         public void Append(string value)
         {
             _appendingBuffer.Append(value);
+            if (!NeedAnimation)
+            {
+                Flush();
+            }
         }
 
         /// <summary>
@@ -113,6 +117,11 @@ namespace Nova
         {
             // update UI
             _text.text = _sb.ToString();
+        }
+
+        public bool IsAnimating
+        {
+            get { return !_appendingBuffer.IsEmpty; }
         }
 
         private float _timeSinceLastAppendChar = 0;

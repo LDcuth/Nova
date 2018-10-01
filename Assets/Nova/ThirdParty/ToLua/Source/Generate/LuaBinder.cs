@@ -73,6 +73,7 @@ public static class LuaBinder
 		Nova_AudioControllerWrap.Register(L);
 		Nova_CharacterControllerWrap.Register(L);
 		Nova_NovaTimelineWrap.Register(L);
+		Nova_DialogueBoxesManagerWrap.Register(L);
 		L.BeginModule("Examples");
 		L.BeginModule("Colorless");
 		L.BeginModule("Scripts");

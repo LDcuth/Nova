@@ -151,6 +151,7 @@ public static class CustomSettings
         _GT(typeof(Nova.AudioController)),
         _GT(typeof(Nova.CharacterController)),
         _GT(typeof(Nova.NovaTimeline)),
+        _GT(typeof(Nova.DialogueBoxesManager)),
         _GT(typeof(Nova.Examples.Colorless.Scripts.InterludeController))
     };
 

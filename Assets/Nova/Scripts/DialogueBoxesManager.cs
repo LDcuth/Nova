@@ -8,12 +8,12 @@ namespace Nova
     /// Only one of all Dialogue Box Controllers can be activated at the same time. Switch between different Dialogue
     /// Box Controllers by changing the Mode of the DialogueBoxManager
     /// </summary>
-    public class DialogueBoxManager : MonoBehaviour
+    public class DialogueBoxesManager : MonoBehaviour
     {
         /// <summary>
         /// All Dialogue Box Controllers to be managed
         /// </summary>
-        public List<GameObject> DialogueBoxControllerGameObjects;
+        [SerializeField] private List<GameObject> DialogueBoxControllerGameObjects;
 
         private Dictionary<string, IDialogueBoxController> _dialogueBoxControllers;
 
@@ -26,14 +26,18 @@ namespace Nova
                 var controller = dialogueGameObject.GetComponent<IDialogueBoxController>();
                 _dialogueBoxControllers.Add(controller.Type.ToLower(), controller);
             }
+            
+            LuaRuntime.Instance.BindObject("dialogueBoxesManager", this);
         }
 
         private void Start()
         {
             // find the first activated controller, make it the current activated mode
             // All other controller will be deactivated
-            foreach (var controller in _dialogueBoxControllers.Values)
+            foreach (var c in _dialogueBoxControllers)
             {
+                var controller = c.Value;
+                var mode = c.Key;
                 var controllerBehaviour = controller as MonoBehaviour;
                 if (controllerBehaviour == null)
                 {
@@ -48,7 +52,7 @@ namespace Nova
                 }
 
                 if (!controllerBehaviour.gameObject.activeSelf) continue;
-                _mode = controller.Type;
+                _mode = mode;
             }
         }
 

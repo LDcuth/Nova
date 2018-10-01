@@ -5,12 +5,12 @@ namespace Nova
 {
     public class TestAuto : MonoBehaviour
     {
-        public NarrowDialogueBoxController NarrowDialogueBoxController;
+        public DialogueBoxController DialogueBoxController;
 
         void Start()
         {
-            NarrowDialogueBoxController.AutoModeStarts.AddListener(OnAutoModeStarts);
-            NarrowDialogueBoxController.AutoModeStops.AddListener(OnAutoModeEnds);
+            DialogueBoxController.AutoModeStarts.AddListener(OnAutoModeStarts);
+            DialogueBoxController.AutoModeStops.AddListener(OnAutoModeEnds);
         }
 
         private void OnAutoModeStarts()
