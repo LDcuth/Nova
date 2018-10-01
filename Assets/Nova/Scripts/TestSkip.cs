@@ -5,12 +5,12 @@ namespace Nova
 {
     public class TestSkip : MonoBehaviour
     {
-        public DialogueBoxController dialogueBoxController;
+        public NarrowDialogueBoxController NarrowDialogueBoxController;
 
         void Start()
         {
-            dialogueBoxController.SkipModeStarts.AddListener(OnSkipModeStarts);
-            dialogueBoxController.SkipModeStops.AddListener(OnSkipModeEnds);
+            NarrowDialogueBoxController.SkipModeStarts.AddListener(OnSkipModeStarts);
+            NarrowDialogueBoxController.SkipModeStops.AddListener(OnSkipModeEnds);
         }
 
         private void OnSkipModeStarts()

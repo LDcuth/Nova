@@ -9,14 +9,7 @@ using UnityEngine.UI;
 
 namespace Nova
 {
-    public enum DialogueBoxState
-    {
-        Normal,
-        Auto,
-        Skip
-    }
-
-    public class DialogueBoxController : MonoBehaviour, IPointerClickHandler
+    public class NarrowDialogueBoxController : MonoBehaviour, IPointerClickHandler, IDialogueBoxController
     {
         public bool needAnimation;
 
@@ -126,6 +119,16 @@ namespace Nova
                         throw new ArgumentOutOfRangeException("value", value, null);
                 }
             }
+        }
+
+        public string Type
+        {
+            get { return "Narrow"; }
+        }
+
+        public void NewPage()
+        {
+            // do nothing
         }
 
         public UnityEvent AutoModeStarts;
